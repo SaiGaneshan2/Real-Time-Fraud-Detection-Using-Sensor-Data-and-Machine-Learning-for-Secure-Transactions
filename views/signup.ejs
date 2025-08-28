@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fuel Fraud Detection - Authentication</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #66b2ff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #66b2ff;
+            z-index: -2;
+        }
+
+        .fuel-pump-symbol {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0.1;
+            z-index: -1;
+            width: 200px;
+            height: 200px;
+        }
+
+        .fuel-droplet {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            z-index: -1;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-100px) scale(1);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.8;
+            }
+            90% {
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(calc(100vh + 100px)) scale(0.7);
+                opacity: 0;
+            }
+        }
+
+        .fuel-pump {
+            position: absolute;
+            width: 80px;
+            height: 150px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            z-index: -1;
+        }
+
+        .fuel-pump::before {
+            content: "";
+            position: absolute;
+            top: -30px;
+            left: 25px;
+            width: 30px;
+            height: 30px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+
+        .fuel-pump::after {
+            content: "";
+            position: absolute;
+            bottom: -20px;
+            left: 15px;
+            width: 50px;
+            height: 20px;
+            background-color: rgba(255, 255, 184, 0.1);
+            border-radius: 5px;
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 450px;
+            padding: 40px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .form-title {
+            color: #0066cc;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .form-subtitle {
+            color: #0066cc;
+            margin-bottom: 30px;
+            font-weight: 400;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border 0.3s ease;
+        }
+
+        .form-input:focus {
+            border-color: #0066cc;
+            outline: none;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: #0055aa;
+        }
+
+        .form-footer {
+            margin-top: 20px;
+            color: #666;
+        }
+
+        .form-link {
+            color: #0066cc;
+            text-decoration: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .form-link:hover {
+            text-decoration: underline;
+        }
+
+        .forms-wrapper {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .forms-container {
+            display: flex;
+            width: 200%;
+            transition: transform 0.6s ease-in-out;
+        }
+
+        .signup-form, .login-form {
+            width: 50%;
+            padding: 0 10px;
+        }
+
+        .forms-container.show-login {
+            transform: translateX(-50%);
+        }
+
+        .alert {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            color: white;
+            background-color: #f44336;
+            display: none;
+        }
+
+        .success {
+            background-color: #4CAF50;
+        }
+
+        .fuel-icon {
+            display: inline-block;
+            margin-bottom: 20px;
+            font-size: 40px;
+        }
+
+        .security-badge {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 5px 10px;
+            background-color: rgba(0, 102, 204, 0.1);
+            border-radius: 15px;
+            font-size: 12px;
+            color: #0066cc;
+        }
+
+        .loading {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.9);
+            z-index: 10;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            border-radius: 10px;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(0, 102, 204, 0.3);
+            border-radius: 50%;
+            border-top-color: #0066cc;
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #0066cc;
+            font-weight: 500;
+        }
+
+        .gas-station {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 150px;
+            background-color: rgba(0, 0, 0, 0.2);
+            z-index: -1;
+            clip-path: polygon(
+                0% 100%,
+                0% 70%,
+                5% 70%,
+                5% 40%,
+                10% 40%,
+                10% 70%,
+                20% 70%,
+                20% 30%,
+                30% 20%,
+                40% 20%,
+                50% 30%,
+                50% 70%,
+                60% 70%,
+                60% 85%,
+                70% 85%,
+                70% 70%,
+                80% 70%,
+                80% 85%,
+                90% 85%,
+                90% 70%,
+                95% 70%,
+                95% 85%,
+                100% 85%,
+                100% 100%
+            );
+        }
+    </style>
+</head>
+<body>
+    <div class="background"></div>
+    <div class="gas-station"></div>
+    
+    <svg class="fuel-pump-symbol" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1">
+        <path d="M3 22V2h10v20H3zm18-2v-8h-4v-4h4V4h-6v6h-2v12h8zm-12-2H7v-2h2v2zm0-4H7v-2h2v2zm0-4H7v-2h2v2zm8 0h-2v-2h2v2z"/>
+    </svg>
+    
+    <div class="fuel-pump" style="top: 20%; left: 10%;"></div>
+    <div class="fuel-pump" style="top: 50%; left: 80%;"></div>
+    <div class="fuel-pump" style="top: 70%; left: 30%;"></div>
+    
+    <div id="fuel-droplets-container"></div>
+    
+    <div class="auth-container">
+        <div class="fuel-icon">⛽</div>
+        
+        <div class="forms-wrapper">
+            <div class="forms-container" id="forms-container">
+                <div class="signup-form">
+                    <h1 class="form-title">Sign Up</h1>
+                    <p class="form-subtitle">Quick and easy</p>
+                    
+                    <div class="alert" id="signup-alert" <% if (signupMessage) { %> style="display: block;" class="<%= signupSuccess ? 'success' : '' %>" <% } %>>
+                        <%= signupMessage || '' %>
+                    </div>
+                    
+                    <form id="signup-form" action="/signup" method="POST">
+                        <div class="form-group">
+                            <input type="text" class="form-input" id="signup-name" name="name" placeholder="Enter your name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <input type="email" class="form-input" id="signup-email" name="email" placeholder="Enter your email" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <input type="password" class="form-input" id="signup-password" name="password" placeholder="Enter your password" required>
+                        </div>
+                        
+                        <button type="submit" class="btn" id="signup-btn">Sign up</button>
+                    </form>
+                    
+                    <p class="form-footer">
+                        Already have an account? <a class="form-link" id="show-login">Log in</a>
+                    </p>
+                    
+                    <div class="security-badge">
+                        <i>🔒</i> Secure Fuel Fraud Detection System
+                    </div>
+                </div>
+                
+                <div class="login-form">
+                    <h1 class="form-title">Log In</h1>
+                    <p class="form-subtitle">Welcome back</p>
+                    
+                    <div class="alert" id="login-alert" <% if (loginMessage) { %> style="display: block;" class="<%= loginSuccess ? 'success' : '' %>" <% } %>>
+                        <%= loginMessage || '' %>
+                    </div>
+                    
+                    <form id="login-form" action="/login" method="POST">
+                        <div class="form-group">
+                            <input type="email" class="form-input" id="login-email" name="email" placeholder="Enter your email" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <input type="password" class="form-input" id="login-password" name="password" placeholder="Enter your password" required>
+                        </div>
+                        
+                        <button type="submit" class="btn" id="login-btn">Log in</button>
+                    </form>
+                    
+                    <p class="form-footer">
+                        Don't have an account? <a class="form-link" id="show-signup">Sign up</a>
+                    </p>
+                    
+                    <div class="security-badge">
+                        <i>🔒</i> Secure Fuel Fraud Detection System
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="loading">
+            <div class="loading-spinner"></div>
+            <p class="loading-text">Verifying credentials...</p>
+        </div>
+    </div>
+
+    <script>
+        const dropletsContainer = document.getElementById('fuel-droplets-container');
+        const dropletCount = 30;
+        
+        for (let i = 0; i < dropletCount; i++) {
+            const droplet = document.createElement('div');
+            droplet.classList.add('fuel-droplet');
+            
+            const size = Math.random() * 15 + 5;
+            droplet.style.width = `${size}px`;
+            droplet.style.height = `${size}px`;
+            
+            const posX = Math.random() * 100;
+            droplet.style.left = `${posX}%`;
+            
+            const duration = Math.random() * 10 + 10;
+            droplet.style.animationDuration = `${duration}s`;
+            
+            const delay = Math.random() * 10;
+            droplet.style.animationDelay = `${delay}s`;
+            
+            dropletsContainer.appendChild(droplet);
+        }
+        
+        const formsContainer = document.getElementById('forms-container');
+        const showLoginBtn = document.getElementById('show-login');
+        const showSignupBtn = document.getElementById('show-signup');
+        const signupForm = document.getElementById('signup-form');
+        const loginForm = document.getElementById('login-form');
+        const signupAlert = document.getElementById('signup-alert');
+        const loginAlert = document.getElementById('login-alert');
+        const loading = document.querySelector('.loading');
+
+        showLoginBtn.addEventListener('click', () => {
+            formsContainer.classList.add('show-login');
+        });
+
+        showSignupBtn.addEventListener('click', () => {
+            formsContainer.classList.remove('show-login');
+        });
+
+        signupForm.addEventListener('submit', (e) => {
+            const name = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            
+            if (!name || !email || !password) {
+                e.preventDefault();
+                showAlert(signupAlert, 'Please fill in all fields', false);
+                return;
+            }
+            
+            if (!email.endsWith('@gmail.com')) {
+                e.preventDefault();
+                showAlert(signupAlert, 'Email must be a Gmail address (@gmail.com)', false);
+                return;
+            }
+            
+            if (password.length < 8) {
+                e.preventDefault();
+                showAlert(signupAlert, 'Password must be at least 8 characters', false);
+                return;
+            }
+            
+            loading.style.display = 'flex';
+        });
+
+        loginForm.addEventListener('submit', (e) => {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            if (!email || !password) {
+                e.preventDefault();
+                showAlert(loginAlert, 'Please fill in all fields', false);
+                return;
+            }
+            
+            if (!email.endsWith('@gmail.com')) {
+                e.preventDefault();
+                showAlert(loginAlert, 'Email must be a Gmail address (@gmail.com)', false);
+                return;
+            }
+            
+            if (password.length < 8) {
+                e.preventDefault();
+                showAlert(loginAlert, 'Password must be at least 8 characters', false);
+                return;
+            }
+            
+            loading.style.display = 'flex';
+        });
+
+        function showAlert(element, message, isSuccess) {
+            element.textContent = message;
+            element.style.display = 'block';
+            
+            if (isSuccess) {
+                element.classList.add('success');
+            } else {
+                element.classList.remove('success');
+            }
+            
+            setTimeout(() => {
+                element.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

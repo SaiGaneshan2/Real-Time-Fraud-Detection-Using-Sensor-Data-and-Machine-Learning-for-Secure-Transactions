@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Petrol Pumps Near Me</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <div class="canvas-container" id="canvas-container"></div>
+    <div class="background-shapes"></div>
+    
+    <div class="container">
+        <h1>
+            <span class="fuel-icon">⛽</span>
+            Find Petrol Pumps Near Me
+            <span class="fuel-icon">⛽</span>
+        </h1>
+        
+        <div class="search-options">
+            <button class="location-btn" id="find-location">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+                </svg>
+                Find Petrol Pumps Near Me
+            </button>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Searching for petrol pumps near you...</p>
+        </div>
+        
+        <div class="error-message" id="error-message"></div>
+        
+        <div class="results" id="results">
+            <div id="search-result-info" class="search-result-info"></div>
+            <h2 style="color: #0055a4; margin: 15px 0; text-align: center;">Nearest Petrol Pumps:</h2>
+            <div id="petrol-pumps-list"></div>
+            <button id="test-insert" style="margin: 10px; padding: 10px; background: #0055a4; color: white; border: none; border-radius: 5px; cursor: pointer;">Test Insert IndianOil</button>
+        </div>
+        
+        <div class="map-container" id="map-container">
+            <div id="map"></div>
+        </div>
+    </div>
+
+    <script src="/js/three-animation.js"></script>
+    <script src="/js/map-functions.js"></script>
+</body>
+</html>

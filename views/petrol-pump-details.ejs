@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= pumpName %> - Petrol Pump Details & Reviews</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/details.css">
+    <style>
+        .sentiment-chart {
+            max-width: 100%;
+            height: 300px;
+            margin: 20px 0;
+        }
+        .topic-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+        }
+        .topic-tag {
+            font-weight: bold;
+            color: #4fc3f7;
+        }
+        .verdict {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin: 20px 0;
+            padding: 15px;
+            text-align: center;
+            border-radius: 8px;
+        }
+        .recommended {
+            background-color: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+        }
+        .not-recommended {
+            background-color: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+        }
+        .average {
+            background-color: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+        }
+        .debug-section {
+            background: #f0f0f0;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            color: #333;
+        }
+        .rating-stars {
+            display: flex;
+            gap: 5px;
+            cursor: pointer;
+        }
+        .star {
+            font-size: 24px;
+            color: #ccc;
+            transition: color 0.2s;
+        }
+        .star.selected, .star:hover, .star:hover ~ .star {
+            color: #ffd700;
+        }
+        .star.selected {
+            color: #ffd700;
+        }
+        .error-message {
+            color: #f44336;
+            text-align: center;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="canvas-container" id="canvas-container"></div>
+    <div class="background-shapes"></div>
+    
+    <div class="container">
+        <div class="header">
+            <a href="/map" class="back-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Back to Map
+            </a>
+        </div>
+        
+        <h1>
+            <span class="fuel-icon">⛽</span>
+            <span id="page-title"><%= pumpName %></span>
+            <span class="fuel-icon">⛽</span>
+        </h1>
+        
+        <div class="debug-section">
+            <h3>Debug Information</h3>
+            <p>Pump ID: <%= pumpId %></p>
+            <p>Number of Reviews: <%= reviews.length %></p>
+            <p>Raw Sentiment: <%= JSON.stringify(sentiment) %></p>
+            <p>Raw Topics: <%= JSON.stringify(topics) %></p>
+            <p>Raw Verdict: <%= verdict %></p>
+        </div>
+        
+        <div class="pump-details" id="pump-details">
+            <div class="pump-name" id="pump-name"><%= pumpName %></div>
+            <div class="pump-info" id="pump-info">
+                <div class="info-item">
+                    <span class="info-label">Distance:</span>
+                    <span class="info-value" id="pump-distance"><%= pumpDistance %> km</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Location:</span>
+                    <span class="info-value" id="pump-location"><%= pumpLat %>, <%= pumpLon %></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Pump ID:</span>
+                    <span class="info-value" id="pump-id"><%= pumpId %></span>
+                </div>
+            </div>
+            <a href="https://www.openstreetmap.org/directions?to=<%= pumpLat %>,<%= pumpLon %>" class="directions-btn" id="directions-link" target="_blank">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
+                </svg>
+                Get Directions
+            </a>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                Write a Review
+            </div>
+            <form class="review-form" id="review-form">
+                <input type="hidden" id="pump-id-input" value="<%= pumpId %>">
+                <input type="hidden" id="rating-input" name="rating" value="0"> <!-- Added hidden input for rating -->
+                <div class="form-group">
+                    <label for="reviewer-name">Your Name</label>
+                    <input type="text" id="reviewer-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="review-rating">Rating</label>
+                    <div class="rating-stars" id="rating-stars">
+                        <span class="star" data-rating="1">★</span>
+                        <span class="star" data-rating="2">★</span>
+                        <span class="star" data-rating="3">★</span>
+                        <span class="star" data-rating="4">★</span>
+                        <span class="star" data-rating="5">★</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="review-text">Your Review</label>
+                    <textarea id="review-text" required placeholder="Share your experience at this petrol pump..."></textarea>
+                </div>
+                <button type="submit" class="submit-btn">Submit Review</button>
+            </form>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                </svg>
+                Customer Reviews
+            </div>
+            <div class="reviews-container" id="reviews-container">
+                <% if (reviews && reviews.length > 0) { %>
+                    <% reviews.forEach(function(review) { %>
+                        <div class="review">
+                            <div class="review-text"><%= review.review_text %></div>
+                            <div class="review-meta">
+                                <span>By <%= review.reviewer_name %></span> | 
+                                <span>Rating: <%= review.rating %>★</span> | 
+                                <span><%= new Date(review.review_date).toLocaleString() %></span>
+                            </div>
+                        </div>
+                    <% }); %>
+                <% } else { %>
+                    <div class="no-reviews" id="no-reviews">
+                        No reviews yet. Be the first to write a review!
+                    </div>
+                <% } %>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                </svg>
+                Sentiment Analysis
+            </div>
+            <div class="sentiment-analysis" id="sentiment-analysis">
+                <% if (sentiment.positive + sentiment.neutral + sentiment.negative === 0) { %>
+                    <div class="error-message">No sentiment data available. ML analysis may have failed.</div>
+                <% } %>
+                <canvas id="sentimentChart" class="sentiment-chart"></canvas>
+                <div class="sentiment-stats">
+                    <div>Positive: <%= sentiment.positive %> reviews</div>
+                    <div>Neutral: <%= sentiment.neutral %> reviews</div>
+                    <div>Negative: <%= sentiment.negative %> reviews</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="2" y1="12" x2="22" y2="12"></line>
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                </svg>
+                Topic Extraction & Summary
+            </div>
+            <div class="analysis-grid">
+                <div class="analysis-card">
+                    <div class="analysis-title">Key Topics</div>
+                    <div class="topic-extraction" id="topic-extraction">
+                        <% if (topics && topics.length > 0) { %>
+                            <% topics.forEach(function(topic) { %>
+                                <div class="topic-item">
+                                    <div class="topic-tag"><%= topic.tag %></div>
+                                    <div>Mentioned in <%= topic.percentage %>% of reviews</div>
+                                    <div><em><%= topic.sentiment %></em></div>
+                                </div>
+                            <% }); %>
+                        <% } else { %>
+                            <div>No topics extracted.</div>
+                        <% } %>
+                    </div>
+                </div>
+                <div class="analysis-card">
+                    <div class="analysis-title">Summary</div>
+                    <div class="review-summary" id="review-summary">
+                        <div class="verdict <%= verdict.toLowerCase().includes('recommended') ? 'recommended' : 
+                                            verdict.toLowerCase().includes('not recommended') ? 'not-recommended' : 'average' %>">
+                            <%= verdict %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.log("petrol-pump-details.ejs loaded successfully in browser");
+        document.addEventListener('DOMContentLoaded', function() {
+            const pumpId = "<%= pumpId %>";
+            const sentimentData = {
+                positive: <%= sentiment.positive %>,
+                neutral: <%= sentiment.neutral %>,
+                negative: <%= sentiment.negative %>
+            };
+
+            const ctx = document.getElementById('sentimentChart').getContext('2d');
+            const sentimentChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Positive', 'Neutral', 'Negative'],
+                    datasets: [{
+                        data: [
+                            sentimentData.positive || 0,
+                            sentimentData.neutral || 0,
+                            sentimentData.negative || 0
+                        ],
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(255, 206, 86, 0.7)',
+                            'rgba(255, 99, 132, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(255, 99, 132, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        }
+                    }
+                }
+            });
+
+            const reviewForm = document.getElementById('review-form');
+            if (reviewForm) {
+                reviewForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+
+                    const pumpId = document.getElementById('pump-id-input').value;
+                    const reviewerName = document.getElementById('reviewer-name').value;
+                    const rating = parseInt(document.getElementById('rating-input').value); // Updated to use rating-input
+                    const reviewText = document.getElementById('review-text').value;
+
+                    if (!rating || rating < 1 || rating > 5) {
+                        alert('Please select a valid rating (1-5 stars).');
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch('/api/reviews', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                pump_id: pumpId,
+                                reviewer_name: reviewerName,
+                                rating: rating,
+                                review_text: reviewText
+                            })
+                        });
+                        const result = await response.json();
+                        if (result.success) {
+                            alert('Review submitted successfully!');
+                            window.location.reload();
+                        } else {
+                            alert('Error submitting review: ' + result.error);
+                        }
+                    } catch (error) {
+                        alert('Error submitting review: ' + error.message);
+                    }
+                });
+
+                const stars = document.querySelectorAll('.star');
+                const ratingInput = document.getElementById('rating-input');
+
+                stars.forEach(star => {
+                    star.addEventListener('click', function() {
+                        const rating = parseInt(this.getAttribute('data-rating'));
+                        stars.forEach(s => s.classList.remove('selected'));
+                        for (let i = 0; i < rating; i++) {
+                            stars[i].classList.add('selected');
+                        }
+                        ratingInput.value = rating; // Update the hidden input with the selected rating
+                    });
+
+                    star.addEventListener('mouseover', function() {
+                        const rating = parseInt(this.getAttribute('data-rating'));
+                        stars.forEach((s, index) => {
+                            if (index < rating) {
+                                s.classList.add('hover');
+                            } else {
+                                s.classList.remove('hover');
+                            }
+                        });
+                    });
+
+                    star.addEventListener('mouseout', function() {
+                        stars.forEach(s => s.classList.remove('hover'));
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>

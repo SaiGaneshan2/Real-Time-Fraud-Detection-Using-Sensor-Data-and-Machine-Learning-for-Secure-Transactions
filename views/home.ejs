@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Fuel Fraud Detection</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-dark: #0a1f3d;
+            --light-blue: #91c8ff;
+            --medium-blue: #4682b4;
+            --dark-blue: #1e3a8a;
+            --accent-orange: #ff6b1a;
+            --warning-red: #ff5252;
+            --success-green: #4caf50;
+            --text-light: #ffffff;
+            --text-muted: #d9e6f0;
+            --blue-gradient-1: #3498db;
+            --blue-gradient-2: #0a1f3d;
+            --orange-shadow: rgba(255, 107, 26, 0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--primary-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            background: 
+                radial-gradient(circle at 80% 40%, rgba(255, 107, 26, 0.1) 0%, rgba(255, 107, 26, 0) 40%),
+                radial-gradient(circle at 20% 80%, rgba(70, 130, 180, 0.15) 0%, rgba(70, 130, 180, 0) 30%);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--light-blue);
+        }
+
+        .logo i {
+            margin-right: 10px;
+            font-size: 28px;
+            color: var(--accent-orange);
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+
+        nav ul li {
+            margin-left: 30px;
+        }
+
+        nav ul li a {
+            color: var(--text-light);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        nav ul li a:hover {
+            color: var(--accent-orange);
+        }
+
+        .user-controls {
+            display: flex;
+            align-items: center;
+            margin-left: 30px;
+        }
+
+        .user-controls .icon {
+            margin-left: 15px;
+            font-size: 20px;
+            color: var(--light-blue);
+            cursor: pointer;
+            transition: color 0.3s, transform 0.2s;
+        }
+
+        .user-controls .icon:hover {
+            color: var(--accent-orange);
+            transform: scale(1.1);
+        }
+
+        .dashboard {
+            background-color: rgba(10, 31, 61, 0.8);
+            padding: 40px;
+            border-radius: 10px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--medium-blue);
+        }
+
+        .dashboard h2 {
+            color: var(--light-blue);
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+
+        .dashboard-stats {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin: 30px 0;
+            gap: 20px;
+        }
+
+        .stat-card {
+            flex: 1;
+            min-width: 250px;
+            background-color: rgba(30, 58, 138, 0.4);
+            padding: 25px;
+            border-radius: 8px;
+            border-left: 3px solid var(--accent-orange);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card h4 {
+            color: var(--light-blue);
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .stat-card .value {
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--text-light);
+            margin-bottom: 10px;
+        }
+
+        .stat-card .trend {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .trend i {
+            margin-right: 5px;
+        }
+
+        .trend-up {
+            color: var(--success-green);
+        }
+
+        .trend-down {
+            color: var(--warning-red);
+        }
+
+        .meter-container {
+            width: 100%;
+            height: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+
+        .meter-fill {
+            height: 100%;
+            background: linear-gradient(to right, var(--accent-orange), #ff9500);
+            border-radius: 5px;
+            transition: width 1s;
+        }
+
+        .dashboard-content {
+            margin-top: 40px;
+        }
+
+        .dashboard-content h3 {
+            color: var(--accent-orange);
+            font-size: 24px;
+            margin: 20px 0 15px;
+        }
+
+        .dashboard-content p {
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        footer {
+            background-color: rgba(10, 31, 61, 0.9);
+            padding: 40px 0;
+            margin-top: 50px;
+            border-top: 2px solid var(--medium-blue);
+            position: relative;
+            z-index: 1;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .footer-column {
+            flex: 1;
+            min-width: 200px;
+            margin-bottom: 30px;
+        }
+
+        .footer-column h3 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: var(--light-blue);
+        }
+
+        .footer-column ul {
+            list-style: none;
+        }
+
+        .footer-column ul li {
+            margin-bottom: 10px;
+        }
+
+        .footer-column ul li a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-column ul li a:hover {
+            color: var(--accent-orange);
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 30px;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-stats {
+                flex-direction: column;
+            }
+            
+            .stat-card {
+                min-width: 100%;
+            }
+            
+            nav ul {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background"></div>
+    
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-gas-pump"></i> Fuel Fraud Detection
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#dashboard" class="active">Dashboard</a></li>
+                    <li><a href="live.html">Live Monitoring</a></li>
+                    <li><a href="/petrol-pump-details">Review Analysis</a></li>
+                    <li><a href="/map?user=<%= user_name %>">Find Nearby Pumps</a></li>
+                </ul>
+                <div class="user-controls">
+                    <div class="icon" title="Logged in as <%= user_name %>">
+                        <i class="fas fa-user-circle"></i> <%= user_name %>
+                    </div>
+                    <div class="icon">
+                        <a href="/logout" style="color: var(--light-blue); text-decoration: none;">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <main class="dashboard">
+            <h2>Dashboard Overview</h2>
+            
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <h4>Potential Fraud Detected</h4>
+                    <div class="value"><%= potential_fraud %></div>
+                    <div class="trend">
+                        <i class="fas fa-arrow-down trend-down"></i> 8% from last week
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <h4>Money Saved</h4>
+                    <div class="value">$<%= money_saved %></div>
+                    <div class="trend">
+                        <i class="fas fa-arrow-up trend-up"></i> 12% from last month
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <h4>Fuel Accuracy Rating</h4>
+                    <div class="value"><%= fuel_accuracy %>%</div>
+                    <div class="meter-container">
+                        <div class="meter-fill" style="width: <%= fuel_accuracy %>%;"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="dashboard-content">
+                <h3>Live Fuel Monitoring System</h3>
+                <p>Our advanced fuel monitoring system provides real-time data on what you're actually getting at the pump. Using proprietary technology, we can detect discrepancies between reported and actual fuel dispensed.</p>
+
+                <h3>Recent Activity</h3>
+                <p>Your last fuel transaction was analyzed and found to be within acceptable parameters. No fraud was detected in your most recent fill-up.</p>
+
+                <h3>Fraud Prevention Tips</h3>
+                <p>To maximize your protection against fuel fraud:</p>
+                <ul style="list-style-type: none; padding: 0;">
+                    <li style="background-color: rgba(70, 130, 180, 0.15); margin: 10px 0; padding: 15px; border-radius: 5px; border-left: 3px solid var(--accent-orange);">
+                        <i class="fas fa-check-circle" style="color: var(--success-green); margin-right: 10px;"></i> Always check the pump's calibration certificate
+                    </li>
+                    <li style="background-color: rgba(70, 130, 180, 0.15); margin: 10px 0; padding: 15px; border-radius: 5px; border-left: 3px solid var(--accent-orange);">
+                        <i class="fas fa-check-circle" style="color: var(--success-green); margin-right: 10px;"></i> Use stations with high accuracy ratings
+                    </li>
+                    <li style="background-color: rgba(70, 130, 180, 0.15); margin: 10px 0; padding: 15px; border-radius: 5px; border-left: 3px solid var(--accent-orange);">
+                        <i class="fas fa-check-circle" style="color: var(--success-green); margin-right: 10px;"></i> Report suspicious activity through our app
+                    </li>
+                </ul>
+            </div>
+        </main>
+    </div>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>Fuel Fraud Detection</h3>
+                    <ul>
+                        <li><a href="#about">About Us</a></li>
+                        <li><a href="#team">Our Team</a></li>
+                        <li><a href="#technology">Our Technology</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Resources</h3>
+                    <ul>
+                        <li><a href="#blog">Fraud Prevention Blog</a></li>
+                        <li><a href="#faq">FAQ</a></li>
+                        <li><a href="#support">Support Center</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Contact Us</h3>
+                    <ul>
+                        <li>📞 (555) 123-4567</li>
+                        <li>✉️ info@fuelfrauddetection.com</li>
+                        <li>⏰ 24/7 Support Available</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                &copy; 2025 Fuel Fraud Detection. All rights reserved.
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

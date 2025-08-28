@@ -1,0 +1,283 @@
+/* styles.css */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  background: linear-gradient(135deg, #e0f7ff 0%, #0077be 100%);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.background-shapes {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.container {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 800px;
+  padding: 30px;
+  margin-top: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+h1 {
+  color: #0055a4;
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 2.5rem;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+}
+
+.fuel-icon {
+  font-size: 2rem;
+  color: #0055a4;
+}
+
+.location-btn {
+  background: #0055a4;
+  color: white;
+  border: none;
+  padding: 15px 25px;
+  border-radius: 50px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 0 auto;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 85, 164, 0.3);
+  width: 100%;
+  max-width: 400px;
+}
+
+.location-btn:hover {
+  background: #003b73;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 85, 164, 0.4);
+}
+
+.location-btn:active {
+  transform: translateY(1px);
+}
+
+.loading {
+  display: none;
+  text-align: center;
+  margin: 20px 0;
+  color: #0055a4;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 5px solid rgba(0, 85, 164, 0.3);
+  border-radius: 50%;
+  border-top-color: #0055a4;
+  animation: spin 1s ease-in-out infinite;
+  margin: 0 auto 10px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.results {
+  display: none;
+  margin-top: 30px;
+}
+
+.petrol-pump {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 15px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+  border-left: 5px solid #0055a4;
+  position: relative;
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.petrol-pump:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  background-color: #f0f8ff;
+}
+
+.pump-name {
+  font-size: 1.3rem;
+  color: #0055a4;
+  margin-bottom: 5px;
+  font-weight: bold;
+  pointer-events: auto;
+  cursor: pointer;
+  z-index: 1000;
+  position: relative;
+}
+
+.pump-distance {
+  display: inline-block;
+  background: #e6f4ff;
+  color: #0055a4;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+  pointer-events: none;
+}
+
+.pump-address {
+  color: #555;
+  margin-bottom: 15px;
+  line-height: 1.4;
+  pointer-events: none;
+}
+
+.directions-btn, .view-details-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #0055a4;
+  color: white;
+  text-decoration: none;
+  padding: 8px 15px;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.directions-btn:hover, .view-details-btn:hover {
+  background: #003b73;
+}
+
+.error-message {
+  display: none;
+  color: #e74c3c;
+  text-align: center;
+  margin: 20px 0;
+  padding: 15px;
+  background: #ffeaea;
+  border-radius: 5px;
+}
+
+.fuel-drop {
+  position: absolute;
+  width: 10px;
+  height: 15px;
+  background: #0055a4;
+  border-radius: 50% 50% 0 50%;
+  transform: rotate(-45deg);
+  animation: drop 3s infinite linear;
+  opacity: 0;
+}
+
+@keyframes drop {
+  0% {
+    top: -20px;
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.7;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+.pump-icon {
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  font-size: 2rem;
+  color: #0055a4;
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+.map-container {
+  height: 300px;
+  width: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 20px;
+  display: none;
+}
+
+#map {
+  height: 100%;
+  width: 100%;
+}
+
+.canvas-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.search-result-info {
+  margin-top: 10px;
+  color: #0055a4;
+  text-align: center;
+  font-weight: bold;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 10px;
+  padding: 5px;
+}
+
+.leaflet-popup-content {
+  margin: 10px;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.popup-title {
+  font-weight: bold;
+  color: #0055a4;
+  margin-bottom: 5px;
+}
+
+@media (max-width: 600px) {
+  .container {
+    padding: 20px;
+  }
+
+  h1 {
+    font-size: 1.8rem;
+  }
+}

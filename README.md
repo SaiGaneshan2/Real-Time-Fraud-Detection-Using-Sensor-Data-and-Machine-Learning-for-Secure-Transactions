@@ -46,7 +46,6 @@ The system uses real-time data and machine learning models to detect fraudulent 
 
 ### 1. Clone the repo
 ```bash
-git clone https://github.com/your-username/fuel-fraud-detection.git
 cd fuel-fraud-detection
 pip install -r requirements.txt
 3. Setup Hardware
